@@ -1,7 +1,7 @@
 <?php
 /*
  * Plugin Name: Upcoming Posts HTML5
- * Version: 0.0.2
+ * Version: 0.0.3
  * Description: Upcoming Posts widget that uses HTML5
  * Author: Kayle Armstrong
  * Author URI: http://www.amberkayle.com
@@ -21,6 +21,7 @@ class Upcoming_Posts_Html5 extends WP_Widget {
                               'upcoming_number' => 5,
                               'include_author' => true,
                               'upcoming_title' => 'An Untitled Post',
+                              'grab_by_tag' => false,
                               'upcoming_tag_slug' => 'ready-to-post');
   
     $widget_ops = array('classname' => 'widget_upcoming_posts_html5', 'description' => __( "Upcoming Posts widget that uses HTML5") );      
@@ -47,13 +48,15 @@ class Upcoming_Posts_Html5 extends WP_Widget {
                                         'upcoming_number' => $this->defaults['upcoming_number'],
                                         'include_author' => $this->defaults['include_author'],
                                         'upcoming_title' => $this->defaults['upcoming_title'],
+                                        'grab_by_tag' => $this->defaults['grab_by_tag'],
                                         'upcoming_tag_slug' => $this->defaults['upcoming_tag_slug'] ) );
                  
     // Get values                                      
     $widget_title = esc_attr($instance['widget_title']);
 		$upcoming_number = absint($instance['upcoming_number']);
     $include_author = (bool) $instance['include_author'];		
-    $upcoming_title = esc_attr($instance['upcoming_title']);    
+    $upcoming_title = esc_attr($instance['upcoming_title']); 
+    $grab_by_tag = (bool) $instance['grab_by_tag'];   
     $upcoming_tag_slug = esc_attr($instance['upcoming_tag_slug']);
 		
 		
@@ -72,9 +75,20 @@ class Upcoming_Posts_Html5 extends WP_Widget {
 	  $output_upcoming_title .= "type='text' value='{$upcoming_title}' />";
 	  $output_upcoming_title .= "</label></p>";	  
 	  
+    // Grab by tag
+    $output_grab_by_tag = '<p style="text-align:left;">';    
+    $output_grab_by_tag  .= '<label for="' . $this->get_field_id('grab_by_tag ') . '">' . __('Grab drafts by tag? ');
+    $output_grab_by_tag .= '<input type="checkbox" id="' . $this->get_field_id('grab_by_tag') . 
+                                                     '" name="' . $this->get_field_name('grab_by_tag') . '"';
+    if( $grab_by_tag  ){
+      $output_grab_by_tag .= ' checked="checked" ';
+    }
+    $output_grab_by_tag  .= '/>';
+    $output_grab_by_tag .= '</label></p>';	
+	  
 		// Default Tag slug
 		$output_upcoming_tag_slug = "<p style='text-align:left'>";
-    $output_upcoming_tag_slug .= '<label for="' . $this->get_field_name('upcoming_tag_slug') . '">' . __('Default Post Tag Slug: ');		
+    $output_upcoming_tag_slug .= '<label for="' . $this->get_field_name('upcoming_tag_slug') . '">' . __('Draft Tag Slug: ');		
 		$output_upcoming_tag_slug .= "<input id='{$this->get_field_id('upcoming_tag_slug')}' name='{$this->get_field_name('upcoming_tag_slug')}'";
 	  $output_upcoming_tag_slug .= "type='text' value='{$upcoming_tag_slug}' />";
 	  $output_upcoming_tag_slug .= "</label></p>";	  	  
@@ -107,6 +121,7 @@ class Upcoming_Posts_Html5 extends WP_Widget {
 
     echo $output_widget_title;
     echo $output_upcoming_title;
+    echo $output_grab_by_tag;
     echo $output_upcoming_tag_slug;
     echo $output_upcoming_number;
     echo $output_include_author;
@@ -132,7 +147,13 @@ class Upcoming_Posts_Html5 extends WP_Widget {
     $instance['include_author'] = 0;
     if( isset( $new_instance['include_author'] ) ){
       $instance['include_author'] = 1;
-    }          
+    }  
+    
+    // grab_by_tag = checkbox
+    $instance['grab_by_tag'] = 0;
+    if( isset( $new_instance['grab_by_tag'] ) ){
+      $instance['grab_by_tag'] = 1;
+    }        
     
     
 		$this->flush_widget_cache();
@@ -172,6 +193,9 @@ class Upcoming_Posts_Html5 extends WP_Widget {
                        $this->defaults['upcoming_number'] : $instance['upcoming_number'];
     $include_author = (isset($instance['include_author']) && $instance['include_author']) ? 
                       true : false;
+                      
+    $grab_by_tag = (isset( $instance['grab_by_tag'] ) && $instance['grab_by_tag'] ) ?
+                    true : false;
     $upcoming_title = empty($instance['upcoming_title']) ? 
                       $this->defaults['upcoming_title'] : $instance['upcoming_title'];
     $upcoming_tag_slug = empty($instance['upcoming_tag_slug']) ? 
@@ -189,13 +213,22 @@ class Upcoming_Posts_Html5 extends WP_Widget {
      echo $before_title . $widget_title . $after_title;
     }    
     
+    
     // Get posts 
-    $query = new WP_Query(array(  'posts_per_page' => $upcoming_number, 
-                                  'no_found_rows' => true, 
-                                  'post_status' => 'draft', 
-                                  'ignore_sticky_posts' => true, 
-                                  'tag' => $upcoming_tag_slug ) );
-      
+    if( $grab_by_tag ){
+      $query = new WP_Query(array(  'posts_per_page' => $upcoming_number, 
+                                    'no_found_rows' => true, 
+                                    'post_status' => 'draft', 
+                                    'ignore_sticky_posts' => true, 
+                                    'tag' => $upcoming_tag_slug ) );
+    } else {
+      $query = new WP_Query(array(  'posts_per_page' => $upcoming_number, 
+                                    'no_found_rows' => true, 
+                                    'post_status' => 'draft', 
+                                    'ignore_sticky_posts' => true ) );
+    }
+    
+    
     // Gather post output
     $output = "<ul class='upcoming-posts-html5'>";
     while ($query->have_posts()){

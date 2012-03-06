@@ -1,9 +1,9 @@
 <?php
 /*
  * Plugin Name: Upcoming Posts HTML5
- * Version: 0.0.1
+ * Version: 0.0.2
  * Description: Upcoming Posts widget that uses HTML5
- * Author: Amber Kayle Armstrong
+ * Author: Kayle Armstrong
  * Author URI: http://www.amberkayle.com
  */
  
@@ -14,8 +14,15 @@ add_action( 'widgets_init', create_function('', 'return register_widget("Upcomin
  
 class Upcoming_Posts_Html5 extends WP_Widget {
 
+  private $defaults;
 
   function Upcoming_Posts_Html5() {
+    $this->defaults = array( 'widget_title' =>  'Upcoming Posts',
+                              'upcoming_number' => 5,
+                              'include_author' => true,
+                              'upcoming_title' => 'An Untitled Post',
+                              'upcoming_tag_slug' => 'ready-to-post');
+  
     $widget_ops = array('classname' => 'widget_upcoming_posts_html5', 'description' => __( "Upcoming Posts widget that uses HTML5") );      
     $this->WP_Widget( 'upcoming-posts-html5', __('Upcoming Posts HTML5'), $widget_ops);
 
@@ -35,44 +42,54 @@ class Upcoming_Posts_Html5 extends WP_Widget {
 	function form($instance) {
 	
 	  // Set any uninitialized args to default values
-    $instance = wp_parse_args( (array) $instance, array(  'widget_title' => 'Upcoming Posts',
-                                                          'upcoming_number' => 5,
-                                                          'include_author' => true,
-                                                          'upcoming_title' => 'An Untitled Post' ) );
+    $instance = wp_parse_args( (array) $instance, 
+                                array(  'widget_title' => $this->defaults['widget_title'],
+                                        'upcoming_number' => $this->defaults['upcoming_number'],
+                                        'include_author' => $this->defaults['include_author'],
+                                        'upcoming_title' => $this->defaults['upcoming_title'],
+                                        'upcoming_tag_slug' => $this->defaults['upcoming_tag_slug'] ) );
                  
     // Get values                                      
     $widget_title = esc_attr($instance['widget_title']);
 		$upcoming_number = absint($instance['upcoming_number']);
     $include_author = (bool) $instance['include_author'];		
     $upcoming_title = esc_attr($instance['upcoming_title']);    
+    $upcoming_tag_slug = esc_attr($instance['upcoming_tag_slug']);
 		
 		
 		
 		// Widget Title
-		$output_title = "<p style='text-align:left'>";
-    $output_title .= '<label for="' . $this->get_field_name('widget_title') . '">' . __('Widget Title: ');		
-		$output_title .= "<input id='{$this->get_field_id('widget_title')}' name='{$this->get_field_name('widget_title')}'";
-	  $output_title .= "type='text' value='{$widget_title}' />";
-	  $output_title .= "</label></p>";
+		$output_widget_title = "<p style='text-align:left'>";
+    $output_widget_title .= '<label for="' . $this->get_field_name('widget_title') . '">' . __('Widget Title: ');		
+		$output_widget_title .= "<input id='{$this->get_field_id('widget_title')}' name='{$this->get_field_name('widget_title')}'";
+	  $output_widget_title .= "type='text' value='{$widget_title}' />";
+	  $output_widget_title .= "</label></p>";
 	  
-		// Default Name
-		$output_name = "<p style='text-align:left'>";
-    $output_name .= '<label for="' . $this->get_field_name('upcoming_title') . '">' . __('Default Post Title: ');		
-		$output_name .= "<input id='{$this->get_field_id('upcoming_title')}' name='{$this->get_field_name('upcoming_title')}'";
-	  $output_name .= "type='text' value='{$upcoming_title}' />";
-	  $output_name .= "</label></p>";	  
+		// Default Post Title
+		$output_upcoming_title = "<p style='text-align:left'>";
+    $output_upcoming_title .= '<label for="' . $this->get_field_name('upcoming_title') . '">' . __('Default Post Title: ');		
+		$output_upcoming_title .= "<input id='{$this->get_field_id('upcoming_title')}' name='{$this->get_field_name('upcoming_title')}'";
+	  $output_upcoming_title .= "type='text' value='{$upcoming_title}' />";
+	  $output_upcoming_title .= "</label></p>";	  
+	  
+		// Default Tag slug
+		$output_upcoming_tag_slug = "<p style='text-align:left'>";
+    $output_upcoming_tag_slug .= '<label for="' . $this->get_field_name('upcoming_tag_slug') . '">' . __('Default Post Tag Slug: ');		
+		$output_upcoming_tag_slug .= "<input id='{$this->get_field_id('upcoming_tag_slug')}' name='{$this->get_field_name('upcoming_tag_slug')}'";
+	  $output_upcoming_tag_slug .= "type='text' value='{$upcoming_tag_slug}' />";
+	  $output_upcoming_tag_slug .= "</label></p>";	  	  
 		
 		
 		// Number of posts to list
-    $output_number = '<p style="text-align:left;">';
-    $output_number .= '<label for="' . $this->get_field_name('upcoming_number') . '">' . __('Number of posts to display: ');
-    $output_number .= '<select id="' . $this->get_field_id('upcoming_number') . 
+    $output_upcoming_number = '<p style="text-align:left;">';
+    $output_upcoming_number .= '<label for="' . $this->get_field_name('upcoming_number') . '">' . __('Number of posts to display: ');
+    $output_upcoming_number .= '<select id="' . $this->get_field_id('upcoming_number') . 
                                   '" name="' . $this->get_field_name('upcoming_number') . '"> ';
     for( $i = 1; $i <=10; ++$i ){
       $selected =  ($upcoming_number == $i ? ' selected="selected"' : '' );
-      $output_number  .= '<option value="' . $i . '"' .  $selected . '>' . $i .  '</option>';
+      $output_upcoming_number  .= '<option value="' . $i . '"' .  $selected . '>' . $i .  '</option>';
     }		
-    $output_number .= '</label></select></p>';	
+    $output_upcoming_number .= '</label></select></p>';	
 		
 		
     // Include Author
@@ -84,13 +101,14 @@ class Upcoming_Posts_Html5 extends WP_Widget {
       $output_include_author .= ' checked="checked" ';
     }
     $output_include_author .= '/>';
-    $output_number .= '</label></p>';	
+    $output_include_author .= '</label></p>';	
     
     		
 
-    echo $output_title;
-    echo $output_name;
-    echo $output_number;
+    echo $output_widget_title;
+    echo $output_upcoming_title;
+    echo $output_upcoming_tag_slug;
+    echo $output_upcoming_number;
     echo $output_include_author;
 	
 	}
@@ -108,6 +126,7 @@ class Upcoming_Posts_Html5 extends WP_Widget {
     $instance['widget_title'] = strip_tags(stripslashes($new_instance['widget_title']));
     $instance['upcoming_number'] = strip_tags(stripslashes($new_instance['upcoming_number']));
     $instance['upcoming_title'] = strip_tags(stripslashes($new_instance['upcoming_title']));
+    $instance['upcoming_tag_slug'] = strip_tags(stripslashes($new_instance['upcoming_tag_slug']));
     
     // Include author = checkbox
     $instance['include_author'] = 0;
@@ -149,11 +168,18 @@ class Upcoming_Posts_Html5 extends WP_Widget {
 		extract($args);
 		
 		// extract widget config options. 
+    $upcoming_number = empty($instance['upcoming_number']) ? 
+                       $this->defaults['upcoming_number'] : $instance['upcoming_number'];
+    $include_author = (isset($instance['include_author']) && $instance['include_author']) ? 
+                      true : false;
+    $upcoming_title = empty($instance['upcoming_title']) ? 
+                      $this->defaults['upcoming_title'] : $instance['upcoming_title'];
+    $upcoming_tag_slug = empty($instance['upcoming_tag_slug']) ? 
+                      $this->defaults['upcoming_tag_slug'] : $instance['upcoming_tag_slug'];		
     // $title has a special filter applied because it is the title of the widget which WordPress recognizes.
-    $widget_title = apply_filters('widget_title', empty($instance['widget_title']) ? '&nbsp;' : $instance['widget_title']);
-    $upcoming_number = empty($instance['upcoming_number']) ? '5' : $instance['upcoming_number'];
-    $include_author = (isset($instance['include_author']) && $instance['include_author']) ? true : false;
-    $upcoming_title = empty($instance['upcoming_title']) ? '&nbsp;' : $instance['upcoming_title'];
+    $widget_title = apply_filters('widget_title', empty($instance['widget_title']) ? 
+                    $this->defaults['widget_title'] : $instance['widget_title']);
+
     
     // Before the widget
     echo $before_widget;
@@ -164,7 +190,11 @@ class Upcoming_Posts_Html5 extends WP_Widget {
     }    
     
     // Get posts 
-    $query = new WP_Query(array('posts_per_page' => $upcoming_number, 'no_found_rows' => true, 'post_status' => 'draft', 'ignore_sticky_posts' => true));
+    $query = new WP_Query(array(  'posts_per_page' => $upcoming_number, 
+                                  'no_found_rows' => true, 
+                                  'post_status' => 'draft', 
+                                  'ignore_sticky_posts' => true, 
+                                  'tag' => $upcoming_tag_slug ) );
       
     // Gather post output
     $output = "<ul class='upcoming-posts-html5'>";

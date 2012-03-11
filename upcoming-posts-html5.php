@@ -1,7 +1,7 @@
 <?php
 /*
  * Plugin Name: Upcoming Posts HTML5
- * Version: 0.0.3
+ * Version: 0.0.4
  * Description: Upcoming Posts widget that uses HTML5
  * Author: Kayle Armstrong
  * Author URI: http://www.amberkayle.com
@@ -72,16 +72,14 @@ class Upcoming_Posts_Html5 extends WP_Widget {
 		
 		
 		// Widget Title
-		$output_widget_title = "<p style='text-align:left'>";
-    $output_widget_title .= '<label for="' . $this->get_field_name('widget_title') . 
+    $output_widget_title = '<label for="' . $this->get_field_name('widget_title') . 
                             '">' . __('Widget Title: ');		
 		$output_widget_title .= "<input id='{$this->get_field_id('widget_title')}' name='{$this->get_field_name('widget_title')}'";
 	  $output_widget_title .= "type='text' value='{$widget_title}' />";
-	  $output_widget_title .= "</label></p>";
+	  $output_widget_title .= '</label>';
 	  
 		
 		// Number of posts to list
-#    $output_upcoming_number = '<p style="text-align:left;">';
     $output_upcoming_number = '<label for="' . $this->get_field_name('upcoming_number') . 
                                '">' . __('Number of posts to display: ');
     $output_upcoming_number .= '<select id="' . $this->get_field_id('upcoming_number') . 
@@ -94,7 +92,6 @@ class Upcoming_Posts_Html5 extends WP_Widget {
 		
 		
     // Include Author
-#    $output_include_author = '<p style="text-align:right;">';    
     $output_include_author = '<label for="' . $this->get_field_id('include_author') .'">';
     $output_include_author .= '<input type="checkbox" id="' . $this->get_field_id('include_author') . 
                               '" name="' . $this->get_field_name('include_author') . '"';
@@ -105,7 +102,6 @@ class Upcoming_Posts_Html5 extends WP_Widget {
     $output_include_author .= '</label>';	
     
 		// Default Post Title
-#		$output_upcoming_title = "<p style='text-align:left'>";
     $output_upcoming_title = '<label for="' . $this->get_field_name('upcoming_title') . 
                               '">' . __('Default Post Title: ') ;		
 		$output_upcoming_title .= "<input id='{$this->get_field_id('upcoming_title')}' " . 
@@ -114,21 +110,18 @@ class Upcoming_Posts_Html5 extends WP_Widget {
 	  $output_upcoming_title .= "</label>";	 
 	      
     // Grab by tag
-#    $output_grab_by_tag = '<p style="text-align:left;">';    
-    $output_grab_by_tag  = '<label for="' . $this->get_field_id('grab_by_tag ') . 
-                            '">' . __('Grab drafts by tag? ');
+    $output_grab_by_tag  = '<label for="' . $this->get_field_id('grab_by_tag ') . '">';
     $output_grab_by_tag .= '<input type="checkbox" id="' . $this->get_field_id('grab_by_tag') . 
                                                      '" name="' . $this->get_field_name('grab_by_tag') . '"';
     if( $grab_by_tag  ){
       $output_grab_by_tag .= ' checked="checked" ';
     }
-    $output_grab_by_tag  .= '/>';
+    $output_grab_by_tag  .= '/>' .  __('Grab drafts by tag? ');
     $output_grab_by_tag .= '</label>';	
 	  
 		// Default Tag slug
-#		$output_upcoming_tag_slug = "<p style='text-align:left'>";
     $output_upcoming_tag_slug = "<label for={$this->get_field_name('upcoming_tag_slug')}" . 
-                                 "'>'" . __('Draft Tag Slug: ');		
+                                 "'>" . __('Draft Tag Slug: ');		
 		$output_upcoming_tag_slug .= "<input id='{$this->get_field_id('upcoming_tag_slug')}' " . 
   		                          "name='{$this->get_field_name('upcoming_tag_slug')}'" . 
 	  	                          "type='text' value='{$upcoming_tag_slug}' />";
@@ -137,7 +130,6 @@ class Upcoming_Posts_Html5 extends WP_Widget {
     
     
     // Draft or Scheduled posts
-#		$output_upcoming_post_type = "<p style='text-align:left'>";
     $output_upcoming_post_type = '<label for="' . $this->get_field_name('upcoming_post_type') . 
                                   '">' . __('Draft or Scheduled post? <br />');		
     if( 0 == strcmp( 'draft', $upcoming_post_type ) ){                              
@@ -161,12 +153,13 @@ class Upcoming_Posts_Html5 extends WP_Widget {
 
 
     // Output the form
-    echo "<p style='text-align:left;'>$output_widget_title</p>";
-    echo "<p>$output_upcoming_number $output_include_author</p>";
+    
+    echo "<p>$output_widget_title</p>";
+    echo "<p>$output_upcoming_number" . "$output_include_author</p>";
     echo "<p>$output_upcoming_post_type</p>";
-    echo $output_upcoming_title;
-    echo $output_grab_by_tag;
-    echo $output_upcoming_tag_slug;
+    echo "<p>$output_upcoming_title</p>";
+    echo "<p>$output_grab_by_tag</p>";
+    echo "<p>$output_upcoming_tag_slug<p>";
 	
 	}
 	

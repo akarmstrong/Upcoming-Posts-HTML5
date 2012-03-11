@@ -24,4 +24,4 @@ Installation
 3. Go to the Widgets screen
 4. Add widget
 
-
+~Current Version:0.0.4~
